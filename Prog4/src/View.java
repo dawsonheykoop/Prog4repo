@@ -15,6 +15,10 @@ public class View {
 	public void showResult() {
 		
 	}
+	
+	private void displayCustomers() {
+		
+	}
 
 	
 }

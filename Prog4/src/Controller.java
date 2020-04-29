@@ -1,6 +1,9 @@
 import java.sql.Connection;
 import java.sql.DriverManager;
+import java.sql.ResultSet;
+import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
+import java.sql.Statement;
 
 // A controller to interact with the view and oracle
 public class Controller {
@@ -65,6 +68,59 @@ public class Controller {
 	    this.dbconn = dbconn;
 	}
 	
+	public void testQuery() {
+		String test_query = "select custID, name from dheykoop1.Customer";
+		Statement stmt = null; 			// The query statement that will be executed
+        ResultSet answer = null;		// the result of the executed query
+        
+        try {
+        	stmt = dbconn.createStatement();
+            answer = stmt.executeQuery(test_query);  
+            
+            if (answer != null) {
+
+                System.out.println("\nThe results of the query [" + test_query 
+                                 + "] are:\n");
+
+                    // Get the data about the query result to learn
+                    // the attribute names and use them as column headers
+
+                ResultSetMetaData answermetadata = answer.getMetaData();
+
+                for (int i = 1; i <= answermetadata.getColumnCount(); i++) {
+                    System.out.print(answermetadata.getColumnName(i) + "\t");
+                }
+                System.out.println();
+
+                    // Use next() to advance cursor through the result
+                    // tuples and print their attribute values
+
+                while (answer.next()) {
+                    System.out.println(answer.getInt("custID") + "\t"
+                        + answer.getString("name"));
+                }
+            }
+            System.out.println();
+
+                // Shut down the connection to the DBMS.
+
+            stmt.close();  
+            dbconn.close();
+        } 
+        
+        // Catch any unexpected errors from the query.
+        catch (SQLException e) {
+        	System.err.println("*** SQLException:  "
+                    + "Could not fetch query results.");
+                System.err.println("\tMessage:   " + e.getMessage());
+                System.err.println("\tSQLState:  " + e.getSQLState());
+                System.err.println("\tErrorCode: " + e.getErrorCode());
+                System.exit(-1);
+        }
+        
+					
+	}
+	
 	//TODO
 	/**
 	 * queryUser()
@@ -74,6 +130,7 @@ public class Controller {
 	public void queryUser() {
 		
 	}
+	
 	
 	//TODO
 	/**

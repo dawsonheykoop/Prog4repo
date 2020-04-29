@@ -26,6 +26,7 @@ public class Prog4 {
        
         System.out.println("Successfully connected to the database.\n");
 	        
+        prog4_controller.testQuery();
 	        
 	}
 
