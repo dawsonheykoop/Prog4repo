@@ -24,9 +24,24 @@ public class Prog4 {
         
         Controller prog4_controller = new Controller(username,password);
        
-        System.out.println("Successfully connected to the database.\n");
-	        
-        prog4_controller.testQuery();
+        //System.out.println("Successfully connected to the database.\n");
+        System.out.println("Welcome to Dr. Denton's database assistant!\n.\n.\n.\n"
+				+ "I suppose you'd like some help retrieving some info...\n"
+				+ "Let's see what I can do.");  
+        Integer query_num;
+        while (true) {
+        	query_num = prog4_controller.queryUser();
+        	
+        	if (query_num == 1) {
+        		prog4_controller.insertPatient();
+        	}
+        	
+        	else if (query_num == 2) {
+        		prog4_controller.deletePatient();
+        	}
+        	
+        }
+
 	        
 	}
 
