@@ -47,6 +47,10 @@ public class Prog4 {
         	}
         	
         	else if (query_num == 4) {
+        		prog4_controller.whichPatients();
+        	}
+        	
+        	else if (query_num == 5) {
         		prog4_controller.upcomingProcedures();
         	}
         	

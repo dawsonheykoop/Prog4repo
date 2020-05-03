@@ -148,16 +148,18 @@ public class Controller {
 		
 		System.out.println("Option 3. Display the current employees of Dr. Denton's office.");
 		
-		System.out.println("Option 4. Display the scheduled services for patients with "
+		System.out.println("Option 4. Show the patients with an appointment on a certain date.");
+		
+		System.out.println("Option 5. Display the scheduled services for patients with "
 				+ "upcoming appointments.");
 		
-		System.out.println("Option 5. Retrieve a copy of the bill for a certain patient's"
+		System.out.println("Option 6. Retrieve a copy of the bill for a certain patient's"
 				+ " most recent vist.");
 		
 		//TODO: DEVELOP OWN QUERY
-		System.out.println("Option 6. TBD\n");
+		System.out.println("Option 7. TBD\n");
 		
-		System.out.print("Enter a digit (1-6) of the option you'd like, or "
+		System.out.print("Enter a digit (1-7) of the option you'd like, or "
 				+ "\'exit\' if you are finished: ");
 		
 		String desired_query = ask_user.next();
@@ -187,7 +189,7 @@ public class Controller {
 			closeConnection();
 			System.exit(-1);
 		}
-		if (query_digit < 1 || query_digit > 6 || error) {
+		if (query_digit < 1 || query_digit > 7 || error) {
 			System.out.println("You have entered an invalid response. When you try again "
 					+ "please enter a digit one through six.");
 			closeConnection();
@@ -520,6 +522,74 @@ public class Controller {
 	
 	public void whichPatients() {
 		Scanner scan = new Scanner(System.in);
+		System.out.println("Which date are you inquiring about? Please enter in the form: "
+				+ "08-jun-2020");
+		boolean error = false;
+		
+		String response = scan.next();
+		
+		String[] date = response.split("-");
+
+		if (date.length != 3 || date[0].length() != 2 || date[1].length() != 3 || date[2].length() != 4) {
+			error = true;
+		}
+		
+		if (error) {
+			System.out.println("Invalid date entered. Maybe try again with the correct form.");
+			closeConnection();
+			System.exit(-1);
+		}
+		
+		String query = "select custID as \"ID\", name from dheykoop1.Customer join dheykoop1.Appointment"
+				+ " on (custID = customerNo) where aptDate = TO_DATE(\'" + response + "\', \'DD-MON-YYYY\')";
+		
+		Statement stmt = null; 			// The query statement that will be executed
+        ResultSet answer = null;		// the result of the executed query
+        
+        try {
+        	stmt = dbconn.createStatement();
+            answer = stmt.executeQuery(query);  
+            
+            if (answer != null) {
+            	
+            	System.out.println();
+            	
+                    // Get the data about the query result to learn
+                    // the attribute names and use them as column headers
+
+                ResultSetMetaData answermetadata = answer.getMetaData();
+
+                for (int i = 1; i <= answermetadata.getColumnCount(); i++) {
+                    System.out.print(answermetadata.getColumnName(i) + "\t");
+                }
+                System.out.println();
+
+                    // Use next() to advance cursor through the result
+                    // tuples and print their attribute values
+
+                while (answer.next()) {
+                    System.out.println(answer.getInt("ID") + "\t"
+                        + answer.getString("name") + "\t");
+                   
+                }
+            }
+            System.out.println();
+
+                // Shut down the connection to the DBMS.
+
+            stmt.close();  
+        } 
+        
+        // Catch any unexpected errors from the query.
+        catch (SQLException e) {
+        	System.err.println("*** SQLException:  "
+                    + "Could not fetch query results.");
+                System.err.println("\tMessage:   " + e.getMessage());
+                System.err.println("\tSQLState:  " + e.getSQLState());
+                System.err.println("\tErrorCode: " + e.getErrorCode());
+                closeConnection();
+                System.exit(-1);
+        }
 		
 	}
 }
