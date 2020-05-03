@@ -25,6 +25,7 @@ public class Prog4 {
         Controller prog4_controller = new Controller(username,password);
        
         //System.out.println("Successfully connected to the database.\n");
+        System.out.println();
         System.out.println("Welcome to Dr. Denton's database assistant!\n.\n.\n.\n"
 				+ "I suppose you'd like some help retrieving some info...\n"
 				+ "Let's see what I can do.");  

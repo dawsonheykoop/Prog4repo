@@ -223,7 +223,6 @@ public class Controller {
                 answer.next();
                 
                 max_id = answer.getInt("max(custID)");
-                System.out.println(max_id);
 
             }
             System.out.println();
@@ -353,18 +352,28 @@ public class Controller {
 			return;
 		}
 		
-		String del_query = "delete from dheykoop1.Customer "
+		// Make the queries that will remove the customer from the database.
+		// This includes any of the tables that contain information relating to
+		// this customer. 
+		
+		String cust_del_query = "delete from dheykoop1.Customer "
 				+ "where custID = " + delete_id;
+		String app_del_query = "delete from dheykoop1.Appointment "
+				+ "where customerNo = " + delete_id;
+		String schedProc_del_query = "delete from dheykoop1.ScheduledProcedure "
+				+ "where customerID = " + delete_id;
 		try {
         	stmt = dbconn.createStatement();
-            answer = stmt.executeQuery(del_query);  
+            stmt.executeQuery(cust_del_query);  
+            stmt.executeQuery(app_del_query);
+            stmt.executeQuery(schedProc_del_query);
             stmt.close();  
         } 
         
         // Catch any unexpected errors from the query.
         catch (SQLException e) {
         	System.err.println("*** SQLException:  "
-                    + "Could not insert the new patient.");
+                    + "Something went wrong in the deletion process.");
                 System.err.println("\tMessage:   " + e.getMessage());
                 System.err.println("\tSQLState:  " + e.getSQLState());
                 System.err.println("\tErrorCode: " + e.getErrorCode());
@@ -372,7 +381,7 @@ public class Controller {
                 System.exit(-1);
         }
 		System.out.println("If the person with the " + delete_id + " id was in "
-				+ "the database before, they aren't anymore...");
+				+ "the database before, they aren't anymore along with any records about them...");
        
 	}
 }
