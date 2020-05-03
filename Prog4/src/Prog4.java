@@ -30,6 +30,7 @@ public class Prog4 {
 				+ "I suppose you'd like some help retrieving some info...\n"
 				+ "Let's see what I can do.");  
         Integer query_num;
+        
         while (true) {
         	query_num = prog4_controller.queryUser();
         	
@@ -39,6 +40,14 @@ public class Prog4 {
         	
         	else if (query_num == 2) {
         		prog4_controller.deletePatient();
+        	}
+        	
+        	else if (query_num == 3) {
+        		prog4_controller.showEmployees();
+        	}
+        	
+        	else if (query_num == 4) {
+        		prog4_controller.upcomingProcedures();
         	}
         	
         }

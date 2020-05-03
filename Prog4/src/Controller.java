@@ -1,4 +1,5 @@
 import java.sql.Connection;
+import java.sql.Date;
 import java.sql.DriverManager;
 import java.sql.ResultSet;
 import java.sql.ResultSetMetaData;
@@ -77,8 +78,9 @@ public class Controller {
 	    this.dbconn = dbconn;
 	}
 	
-	public void testQuery() {
-		String test_query = "select custID, name from dheykoop1.Customer";
+	
+	public void showEmployees() {
+		String test_query = "select empID, name, title from dheykoop1.Employee";
 		Statement stmt = null; 			// The query statement that will be executed
         ResultSet answer = null;		// the result of the executed query
         
@@ -87,9 +89,6 @@ public class Controller {
             answer = stmt.executeQuery(test_query);  
             
             if (answer != null) {
-
-                System.out.println("\nThe results of the query [" + test_query 
-                                 + "] are:\n");
 
                     // Get the data about the query result to learn
                     // the attribute names and use them as column headers
@@ -105,8 +104,10 @@ public class Controller {
                     // tuples and print their attribute values
 
                 while (answer.next()) {
-                    System.out.println(answer.getInt("custID") + "\t"
-                        + answer.getString("name"));
+                    System.out.println(answer.getInt("empID") + "\t"
+                        + answer.getString("name") + "\t" 
+                        + answer.getString("title"));
+                   
                 }
             }
             System.out.println();
@@ -166,7 +167,7 @@ public class Controller {
 		if (desired_query.toUpperCase().equals("EXIT")) {
 			System.out.println("Have a nice day :D\n");
 			closeConnection();
-			System.exit(-1);
+			System.exit(0);
 		}
 		
 		Integer query_digit = null; // The option digit will be stored here
@@ -180,7 +181,12 @@ public class Controller {
 			error = true;
 			
 		}
-		
+		if (query_digit == null) {
+			System.out.println("You have entered an invalid response. When you try again "
+					+ "please enter a digit one through six.");
+			closeConnection();
+			System.exit(-1);
+		}
 		if (query_digit < 1 || query_digit > 6 || error) {
 			System.out.println("You have entered an invalid response. When you try again "
 					+ "please enter a digit one through six.");
@@ -246,6 +252,8 @@ public class Controller {
         
         int new_customer_id = max_id + 1;
         
+        // First get the name of the customer
+        
         System.out.println("What is the first name of the patient?");
         System.out.println("Enter Response Here: ");
         String f_name = scan.next();
@@ -258,16 +266,20 @@ public class Controller {
         
         String name = f_name + " " + l_name;
         
+        // Next get the address of the customer.
+        
         System.out.println("Please enter the street address of the patient.");
         System.out.println("Enter Response Here:");
         String address = scan.nextLine();
+        
+        // Thirdly, get a phone number to reach the customer at.
         
         System.out.println("Please enter a phone number for the patient. NO SPECIAL "
         		+ "CHARACTERS. ONLY NUMBERS");
         System.out.println("Enter Response Here: ");
         String phone = scan.next();
         
-        Integer phone_number = null;
+        Integer phone_number = null;	// the phone number of the new customer
         
         try {
         	phone_number = Integer.parseInt(phone);
@@ -277,10 +289,14 @@ public class Controller {
         	return;
         }
         
-        System.out.println("\nDoes the patient have insurance? (Yes/No)\n");
+        // Ask the customer whether they have insurance.
+        
+        System.out.println("Does the patient have insurance? (Yes/No)");
         System.out.println("Enter Response Here: ");
-        String insurance = scan.next();
+        
+        String insurance = scan.next(); // The user's response to whether the user has insurance.
         Integer insured = null;
+        
         if (insurance.toUpperCase().equals("YES")) {
         	insured = 1;
         }
@@ -293,6 +309,8 @@ public class Controller {
         	System.out.println("You have entered an invalid response. Starting over...");
         	return;
         }
+        
+        // Make the query to insert the new user into the database
         
         String query = "insert into dheykoop1.Customer values(" + new_customer_id +
         		",\'" + name + "\',\'" + address + "\'," + phone_number + "," + insured + 
@@ -319,6 +337,8 @@ public class Controller {
                 
         }
         
+        // Repeat to the user what customer has been inserted and their credentials
+        
         System.out.println("You have successfully entered " + name + " into the "
         		+ "database, with the following credentials.\n");
         System.out.println("Customer ID: " + new_customer_id);
@@ -337,10 +357,12 @@ public class Controller {
 	 * takes a certain patient out of the database
 	 */
 	public void deletePatient() {
-		Scanner scan = new Scanner(System.in);
+		Scanner scan = new Scanner(System.in); // need to ask the user which customer to remove
+		
 		System.out.println("Enter the id of the patient you'd like to remove.");
-		String id = scan.next();
-		Integer delete_id = null;
+		
+		String id = scan.next();		// string version of the id we want to get rid of
+		Integer delete_id = null;		// the id of the customer we want to delete
 		Statement stmt = null; 			// The query statement that will be executed
         ResultSet answer = null;		// the result of the executed query
 		
@@ -383,5 +405,121 @@ public class Controller {
 		System.out.println("If the person with the " + delete_id + " id was in "
 				+ "the database before, they aren't anymore along with any records about them...");
        
+	}
+	
+	public void upcomingProcedures() {
+		//TODO: retrieve current date.
+		
+		Statement stmt = null; 			// The query statement that will be executed
+        ResultSet answer = null;		// the result of the executed query
+        String get_date = "select TO_CHAR(SYSDATE,\'DD-MON-YYYY\'), TO_CHAR(SYSDATE+7,\'DD-MON-YYYY\') FROM dual";
+      
+        String current_date = null;
+        String one_week = null;
+        
+        try {
+        	stmt = dbconn.createStatement();
+        	answer = stmt.executeQuery(get_date);
+        	
+        	if (answer != null) {
+
+                // Use next() to advance cursor through the result
+                // tuples and print their attribute values
+        		
+        		answer.next();
+        		current_date = answer.getString("TO_CHAR(SYSDATE,\'DD-MON-YYYY\')");
+        		one_week = answer.getString("TO_CHAR(SYSDATE+7,\'DD-MON-YYYY\')");
+        		System.out.println("Current date: " + current_date);
+        		System.out.println("One week from today: " + one_week);
+
+        }
+        	System.out.println();
+            stmt.close();  
+        } 
+        
+        // Catch any unexpected errors from the query.
+        catch (SQLException e) {
+        	System.err.println("*** SQLException:  "
+                    + "Something went wrong in the query process.");
+                System.err.println("\tMessage:   " + e.getMessage());
+                System.err.println("\tSQLState:  " + e.getSQLState());
+                System.err.println("\tErrorCode: " + e.getErrorCode());
+                closeConnection();
+                System.exit(-1);
+        }
+        
+        String get_upcoming_apts = "select aptID, aptDate, custID, name from dheykoop1.Customer "
+        		+ "join dheykoop1.Appointment on (custID = customerNo) "
+        		+ "where aptDate >= TO_DATE(" + "\'" + current_date + "\', \'DD-MON-YYYY\') ";//and "
+        				//+ "aptDate <= TO_DATE(" + "\'" + one_week + "\', \'DD-MON-YYYY\')";
+        
+        stmt = null;
+        answer = null;
+        try {
+        	stmt = dbconn.createStatement();
+        	answer = stmt.executeQuery(get_upcoming_apts);
+        	
+        	if (answer != null) {
+
+                // Use next() to advance cursor through the result
+                // tuples and print their attribute values
+
+            while (answer.next()) {
+            	int aptID = answer.getInt("aptID");
+            	String custName = answer.getString("name");
+            	int custId = answer.getInt("custID");
+            	Date date = answer.getDate("aptDate");
+            	
+            	System.out.println("The appointment scheduled for " + custName.toUpperCase() + " with "
+            			+ "identification number " + custId + " on the date: " + date + " has "
+            					+ "the following scheudled procedures: \n");
+            	
+            	String inner_query = "select description as \"Service\" from dheykoop1.Service join dheykoop1.ScheduledProcedure "
+            			+ "on (Service.sID = ScheduledProcedure.sID) where aptID = " + aptID;
+            	
+            	Statement stmt2 = null; 			// The query statement that will be executed
+                ResultSet answer2 = null;			// the result of the executed query
+                stmt2 = dbconn.createStatement();
+                answer2 = stmt2.executeQuery(inner_query);
+                
+                if (answer2 != null) {
+                	ResultSetMetaData inner_answer_meta = answer2.getMetaData();
+                	
+                	// now print the services.
+                	while (answer2.next()) {
+                		System.out.println(answer2.getString("Service"));
+                	}
+                	
+                }
+                
+                System.out.println();
+                
+                stmt2.close();
+                System.out.println("-------------------------------");
+               
+            }
+        }
+        System.out.println();
+
+            // Shut down the connection to the DBMS.
+
+        stmt.close(); 
+        }
+        
+        // Catch any unexpected errors from the query.
+        catch (SQLException e) {
+        	System.err.println("*** SQLException:  "
+                    + "Something went wrong in the query process.");
+                System.err.println("\tMessage:   " + e.getMessage());
+                System.err.println("\tSQLState:  " + e.getSQLState());
+                System.err.println("\tErrorCode: " + e.getErrorCode());
+                closeConnection();
+                System.exit(-1);
+        }
+	}
+	
+	public void whichPatients() {
+		Scanner scan = new Scanner(System.in);
+		
 	}
 }
