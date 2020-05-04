@@ -54,6 +54,10 @@ public class Prog4 {
         		prog4_controller.upcomingProcedures();
         	}
         	
+        	else if (query_num == 6) {
+        		prog4_controller.getBill();
+        	}
+        	
         }
 
 	        

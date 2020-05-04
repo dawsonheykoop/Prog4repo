@@ -200,7 +200,7 @@ public class Controller {
 	}
 	
 	
-	//TODO
+	//TODO MAKE IT ILLEGAL TO INSERT A PHONE NUMBER OF OTHER THAN 10 DIGITS.
 	/**
 	 * insertPatient()
 	 * 
@@ -591,5 +591,166 @@ public class Controller {
                 System.exit(-1);
         }
 		
+	}
+	
+	public ResultSet services(int customer_id) {
+		Statement stmt = null;
+		ResultSet answer = null;
+		String query = "select description as \"service\", cost\n" + 
+				"from scheduledprocedure join service on (scheduledprocedure.sID=Service.sID)\n" + 
+				"where aptID in (select aptID from (select aptID from Appointment\n" + 
+				"        where aptDate <= SYSDATE and customerNo = " + customer_id + "\n" + 
+				"        order by aptDate desc)\n" + 
+				"        where rownum <=1)";
+		
+		try {
+			stmt = dbconn.createStatement();
+			answer = stmt.executeQuery(query);
+			
+			
+			
+		}
+		
+		// Catch any unexpected errors from the query.
+        catch (SQLException e) {
+        	System.err.println("*** SQLException:  "
+                    + "Could not fetch services for the most recent visit.");
+                System.err.println("\tMessage:   " + e.getMessage());
+                System.err.println("\tSQLState:  " + e.getSQLState());
+                System.err.println("\tErrorCode: " + e.getErrorCode());
+                closeConnection();
+                System.exit(-1);
+        }
+		
+		return answer;
+		
+	}
+	
+	public void getBill() {
+		Scanner scan = new Scanner(System.in);
+		System.out.println("Enter the unique identifier for the patient: ");
+		String id = scan.next();
+		Integer custID = null;
+		Integer aptID = null;
+		
+		try {
+			custID = Integer.parseInt(id);
+		}
+		catch (NumberFormatException ex) {
+			System.out.println("You must enter an integer value.");
+			closeConnection();
+			System.exit(-1);
+		}
+		
+		String customer_info_query = "select name, phoneNo, insurance from "
+				+ " dheykoop1.Customer where custID = " + custID;
+		
+		String get_last_apt = "select aptID,TO_CHAR(aptDate,'DD-MON-YYYY') from (select aptID, aptDate from Appointment" + 
+				" where aptDate <= SYSDATE and customerNo = " + custID + 
+				" order by aptDate desc)" + 
+				" where rownum <=1";
+		
+		
+		
+		Statement stmt = null;
+		ResultSet answer = null;
+		ResultSet last_date = null;
+		ResultSet services_list = null;
+		
+		try {
+			stmt = dbconn.createStatement();
+			answer = stmt.executeQuery(customer_info_query);
+			
+			if (answer != null) {
+				if (answer.next()) {
+					
+					String name = answer.getString("name");
+					String phone = answer.getString("phoneNo");
+					String insured = answer.getString("insurance");
+					String insurance = "No";
+					if (insured.equals("1")) {
+						insurance = "Yes";
+					}
+					
+					//ResultSet services_answer = services(custID);
+					
+					last_date = stmt.executeQuery(get_last_apt);
+					
+					if (last_date != null) {
+						if (last_date.next()) {
+							// Getting the appointment ID.
+
+							aptID = last_date.getInt("aptID");
+							String date = last_date.getString("TO_CHAR(aptDate,'DD-MON-YYYY')");
+	
+							String get_services = "select description as \"Service\", cost "
+									+ "from Service join scheduledprocedure on (Service.sID = scheduledprocedure.sID) "
+									+ "where aptID = " + aptID;
+							
+							services_list = stmt.executeQuery(get_services);
+							
+							if (services_list != null) {
+
+				                    // Use next() to advance cursor through the result
+				                    // tuples and print their attribute values
+								
+								System.out.println("---------------------------------------------------");
+								System.out.println("Bill of Services\t\t\t" + date);
+								System.out.println("\nCustomer ID: " + custID
+										+ "\nName: " + name 
+										+ "\nPhone Number: " + phone
+										+ "\nInsurance: " + insurance);
+								
+								System.out.println("\nCHARGES:");
+								float total_charge = 0;
+				                while (services_list.next()) {
+				                	float cost = 0;
+				                	if (insurance.toUpperCase().equals("YES")) {
+				                		cost = (float)services_list.getInt("cost") / 4;
+				                	
+				                	}else {
+				                		cost = services_list.getInt("cost");
+				                	}
+				                	
+				                    System.out.println(services_list.getString("Service") + "-------------------\t"
+				                        + "$" + cost);
+				                    total_charge += cost;
+				                }
+				                System.out.println("\nTotal Charge-------------------\t" + "$" + total_charge);
+				                System.out.println("---------------------------------------------------");
+							}
+							
+							
+						}
+						
+						else {
+							System.out.println("No appointments for this customer have occurred.");
+							return;
+						}
+					}
+					
+					
+					
+				}
+				else {
+					System.out.println("\nThere are no customers with this id!!!\n");
+					return;
+				}
+				
+			}
+			
+			stmt.close();
+		}
+		
+		// Catch any unexpected errors from the query.
+        catch (SQLException e) {
+        	System.err.println("*** SQLException:  "
+                    + "Could not fetch query results.");
+                System.err.println("\tMessage:   " + e.getMessage());
+                System.err.println("\tSQLState:  " + e.getSQLState());
+                System.err.println("\tErrorCode: " + e.getErrorCode());
+                closeConnection();
+                System.exit(-1);
+        }
 	}
 }
