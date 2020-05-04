@@ -83,6 +83,7 @@ public class Controller {
 		String test_query = "select empID, name, title from dheykoop1.Employee";
 		Statement stmt = null; 			// The query statement that will be executed
         ResultSet answer = null;		// the result of the executed query
+        int max_string = 20;
         
         try {
         	stmt = dbconn.createStatement();
@@ -94,9 +95,14 @@ public class Controller {
                     // the attribute names and use them as column headers
 
                 ResultSetMetaData answermetadata = answer.getMetaData();
-
+                String spaces = "";
                 for (int i = 1; i <= answermetadata.getColumnCount(); i++) {
-                    System.out.print(answermetadata.getColumnName(i) + "\t");
+                	spaces = answermetadata.getColumnName(i);
+                	
+                	while (spaces.length() < max_string) {
+                		spaces += " ";
+                	}
+                    System.out.print( spaces);
                 }
                 System.out.println();
 
@@ -104,9 +110,27 @@ public class Controller {
                     // tuples and print their attribute values
 
                 while (answer.next()) {
-                    System.out.println(answer.getInt("empID") + "\t"
-                        + answer.getString("name") + "\t" 
-                        + answer.getString("title"));
+                	spaces = answer.getString("empID");
+                	
+                	while (spaces.length() < max_string) {
+                		spaces += " ";
+                	}
+                	String id = spaces;
+                	
+                	spaces = answer.getString("name");
+                	
+                	while (spaces.length() < max_string) {
+                		spaces += " ";
+                	}
+                	String name = spaces;
+                	
+                	spaces = answer.getString("title");
+                	
+                	while (spaces.length() < max_string) {
+                		spaces += " ";
+                	}
+                	String title = spaces;
+                    System.out.println(id + name + title);
                    
                 }
             }
@@ -157,7 +181,7 @@ public class Controller {
 				+ " most recent vist.");
 		
 		//TODO: DEVELOP OWN QUERY
-		System.out.println("Option 7. TBD\n");
+		System.out.println("Option 7. Display the list of services and their costs (pre-insurance).\n");
 		
 		System.out.print("Enter a digit (1-7) of the option you'd like, or "
 				+ "\'exit\' if you are finished: ");
@@ -427,12 +451,10 @@ public class Controller {
 
                 // Use next() to advance cursor through the result
                 // tuples and print their attribute values
-        		
+        			
         		answer.next();
         		current_date = answer.getString("TO_CHAR(SYSDATE,\'DD-MON-YYYY\')");
         		one_week = answer.getString("TO_CHAR(SYSDATE+7,\'DD-MON-YYYY\')");
-        		System.out.println("Current date: " + current_date);
-        		System.out.println("One week from today: " + one_week);
 
         }
         	System.out.println();
@@ -593,40 +615,9 @@ public class Controller {
 		
 	}
 	
-	public ResultSet services(int customer_id) {
-		Statement stmt = null;
-		ResultSet answer = null;
-		String query = "select description as \"service\", cost\n" + 
-				"from scheduledprocedure join service on (scheduledprocedure.sID=Service.sID)\n" + 
-				"where aptID in (select aptID from (select aptID from Appointment\n" + 
-				"        where aptDate <= SYSDATE and customerNo = " + customer_id + "\n" + 
-				"        order by aptDate desc)\n" + 
-				"        where rownum <=1)";
-		
-		try {
-			stmt = dbconn.createStatement();
-			answer = stmt.executeQuery(query);
-			
-			
-			
-		}
-		
-		// Catch any unexpected errors from the query.
-        catch (SQLException e) {
-        	System.err.println("*** SQLException:  "
-                    + "Could not fetch services for the most recent visit.");
-                System.err.println("\tMessage:   " + e.getMessage());
-                System.err.println("\tSQLState:  " + e.getSQLState());
-                System.err.println("\tErrorCode: " + e.getErrorCode());
-                closeConnection();
-                System.exit(-1);
-        }
-		
-		return answer;
-		
-	}
 	
 	public void getBill() {
+		int string_max = 30;
 		Scanner scan = new Scanner(System.in);
 		System.out.println("Enter the unique identifier for the patient: ");
 		String id = scan.next();
@@ -645,7 +636,7 @@ public class Controller {
 		String customer_info_query = "select name, phoneNo, insurance from "
 				+ " dheykoop1.Customer where custID = " + custID;
 		
-		String get_last_apt = "select aptID,TO_CHAR(aptDate,'DD-MON-YYYY') from (select aptID, aptDate from Appointment" + 
+		String get_last_apt = "select aptID,TO_CHAR(aptDate,'DD-MON-YYYY') from (select aptID, aptDate from dheykoop1.Appointment" + 
 				" where aptDate <= SYSDATE and customerNo = " + custID + 
 				" order by aptDate desc)" + 
 				" where rownum <=1";
@@ -684,7 +675,7 @@ public class Controller {
 							String date = last_date.getString("TO_CHAR(aptDate,'DD-MON-YYYY')");
 	
 							String get_services = "select description as \"Service\", cost "
-									+ "from Service join scheduledprocedure on (Service.sID = scheduledprocedure.sID) "
+									+ "from dheykoop1.Service join dheykoop1.scheduledprocedure on (dheykoop1.Service.sID = dheykoop1.scheduledprocedure.sID) "
 									+ "where aptID = " + aptID;
 							
 							services_list = stmt.executeQuery(get_services);
@@ -711,9 +702,17 @@ public class Controller {
 				                	}else {
 				                		cost = services_list.getInt("cost");
 				                	}
+				                	String line = services_list.getString("Service");
+				                	while (line.length() < string_max) {
+				                		line += "-";
+				                	}
+				                	line += "\t";
+				               
+				                	System.out.println(line + "$" + cost);
+				                    
+				                	//System.out.println(services_list.getString("Service") + "-------------------\t"
+				                      //  + "$" + cost);
 				                	
-				                    System.out.println(services_list.getString("Service") + "-------------------\t"
-				                        + "$" + cost);
 				                    total_charge += cost;
 				                }
 				                System.out.println("\nTotal Charge-------------------\t" + "$" + total_charge);
@@ -752,5 +751,49 @@ public class Controller {
                 closeConnection();
                 System.exit(-1);
         }
+	}
+	
+	public void showServices() {
+		int string_max = 30;
+		
+		Statement stmt = null;
+		ResultSet answer = null;
+		
+		String query = "select description as \"Service\", cost as \"Cost\" "
+		+ " from dheykoop1.Service";
+		
+		try {
+			stmt = dbconn.createStatement();
+			answer = stmt.executeQuery(query);
+			
+			if (answer != null) {
+
+                while (answer.next()) {
+                	String line = answer.getString("Service");
+                	while (line.length() < string_max) {
+                		line += "-";
+                	}
+                	line += "\t";
+               
+                	System.out.println(line + "$" + answer.getInt("Cost"));
+                			
+                	
+                }
+                System.out.println();
+                stmt.close();
+			}
+		}
+		
+		// Catch any unexpected errors from the query.
+        catch (SQLException e) {
+        	System.err.println("*** SQLException:  "
+                    + "Could not fetch query results.");
+                System.err.println("\tMessage:   " + e.getMessage());
+                System.err.println("\tSQLState:  " + e.getSQLState());
+                System.err.println("\tErrorCode: " + e.getErrorCode());
+                closeConnection();
+                System.exit(-1);
+        }
+		
 	}
 }

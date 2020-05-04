@@ -58,6 +58,14 @@ public class Prog4 {
         		prog4_controller.getBill();
         	}
         	
+        	else if (query_num == 7){
+        		prog4_controller.showServices();
+        	}
+        	
+        	else {
+        		System.out.println("Response not understood. Try again");
+        	}
+        	
         }
 
 	        
