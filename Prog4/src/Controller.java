@@ -759,9 +759,7 @@ public class Controller {
 					if (insured.equals("1")) {
 						insurance = "Yes";
 					}
-					
-					//ResultSet services_answer = services(custID);
-					
+										
 					last_date = stmt.executeQuery(get_last_apt);
 					
 					if (last_date != null) {
@@ -790,12 +788,16 @@ public class Controller {
 										+ "\nInsurance: " + insurance);
 								
 								System.out.println("\nCHARGES:");
-								float total_charge = 0;
+								
+								float total_charge = 0;		// keeps track of total charge of a bill
+								
 				                while (services_list.next()) {
 				                	float cost = 0;
 				                	if (insurance.toUpperCase().equals("YES")) {
-				                		cost = (float)services_list.getInt("cost") / 4;
-				                	
+				                		
+				                		cost = (float)services_list.getInt("cost") / 4; // if the patient has insurance the bill is only a quarter 
+				                														// of the whole cost
+				     
 				                	}else {
 				                		cost = services_list.getInt("cost");
 				                	}
@@ -807,9 +809,6 @@ public class Controller {
 				               
 				                	System.out.println(line + "$" + cost);
 				                    
-				                	//System.out.println(services_list.getString("Service") + "-------------------\t"
-				                      //  + "$" + cost);
-				                	
 				                    total_charge += cost;
 				                }
 				                System.out.println("\nTotal Charge-------------------\t" + "$" + total_charge);
@@ -850,6 +849,12 @@ public class Controller {
         }
 	}
 	
+	/**
+	 * showServices()
+	 * 
+	 * displays to the users all the services that are available and their
+	 * costs. This is a short, simple, but sweet query
+	 */
 	public void showServices() {
 		int string_max = 30;
 		
@@ -866,6 +871,8 @@ public class Controller {
 			if (answer != null) {
 
                 while (answer.next()) {
+                	
+                	// Clean up the results a bit by making them look more uniform
                 	String line = answer.getString("Service");
                 	while (line.length() < string_max) {
                 		line += "-";
