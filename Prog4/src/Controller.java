@@ -1,3 +1,15 @@
+/**
+ * ClassName: Controller
+ * Author: Dawson Heykoop
+ * 
+ * Purpose: The purpose of this class is to be the main entity that works to use
+ * both java and the capabilities of oracle to create viability for the queries.
+ * All of the methods that execute the queries are located in this class, and it also
+ * retrieves information from the user when needed. This class does a lot
+ * of back and forth between the java program and the database in oracle. This class
+ * is responsible for connecting to oracle through the given authorized credentials.
+ * 
+ */
 import java.sql.Connection;
 import java.sql.Date;
 import java.sql.DriverManager;
@@ -7,6 +19,7 @@ import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.Scanner;
 
+
 // A controller to interact with the view and oracle
 public class Controller {
 	
@@ -14,13 +27,18 @@ public class Controller {
 	private String username;	// an authorized user to connect to the database
 	private String password;	// the password the authorized account
 	
-	//TODO make the constructor for the view
+	// Constructor for the Controller class
 	public Controller(String username, String password) {
 		this.username = username;
 		this.password = password;
 		this.setup(username,password);
 	}
 	
+	/**
+	 * closeConnection()
+	 * 
+	 * closes the connection between the program and oracle.
+	 */
 	public void closeConnection() {
 		try {
 			dbconn.close();
@@ -29,12 +47,17 @@ public class Controller {
 		}
 	}
 	
-	//TODO
 	/**
 	 * setup()
 	 * 
 	 * Connects the program to oracle using the given username and password and
 	 * initializes the connection variable object.
+	 * 
+	 * @param username is the user's username for oracle
+	 * @param password is the user's password for oracle
+	 * 
+	 * preconditions: username,password are the users credentials
+	 * postconditions: the connection has been made to oracle
 	 */
 	private void setup(String username, String password) {
 		final String oracleURL =   // Magic lectura -> aloe access spell
@@ -59,7 +82,7 @@ public class Controller {
         // make and return a database connection to the user's
         // Oracle database
 
-	    Connection dbconn = null;
+	    Connection dbconn = null; // connection to oracle
 	
 	    try {
 	            dbconn = DriverManager.getConnection
@@ -78,7 +101,14 @@ public class Controller {
 	    this.dbconn = dbconn;
 	}
 	
-	
+	/**
+	 * showEmployees()
+	 * 
+	 * Displays the current employees in Dr. Denton's office, as well as their titles
+	 * 
+	 * preconditions: the database dheykoop1.Employee exists.
+	 * postconditions: The employees are shown to the user.
+	 */
 	public void showEmployees() {
 		String test_query = "select empID, name, title from dheykoop1.Employee";
 		Statement stmt = null; 			// The query statement that will be executed
@@ -110,34 +140,32 @@ public class Controller {
                     // tuples and print their attribute values
 
                 while (answer.next()) {
-                	spaces = answer.getString("empID");
-                	
+                	// makes the ids look nice and uniform
+                	spaces = answer.getString("empID");             
                 	while (spaces.length() < max_string) {
                 		spaces += " ";
                 	}
                 	String id = spaces;
                 	
-                	spaces = answer.getString("name");
-                	
+                	// makes the names look nice and uniform
+                	spaces = answer.getString("name");                	
                 	while (spaces.length() < max_string) {
                 		spaces += " ";
                 	}
                 	String name = spaces;
                 	
-                	spaces = answer.getString("title");
-                	
+                	// makes the titles look nice and uniform
+                	spaces = answer.getString("title");                	
                 	while (spaces.length() < max_string) {
                 		spaces += " ";
                 	}
                 	String title = spaces;
+                	
                     System.out.println(id + name + title);
                    
                 }
             }
             System.out.println();
-
-                // Shut down the connection to the DBMS.
-
             stmt.close();  
         } 
         
@@ -159,10 +187,19 @@ public class Controller {
 	/**
 	 * queryUser()
 	 * 
-	 * Tells the view to query the user
+	 * Finds out which query the user wants to use. There are 7 options. The user enters a single digit when prompted.
+	 * The program gives back an integer that represents which query the user wants to use. The user is also
+	 * given the option of leaving the program by entering 'exit'.
+	 * 
+	 * @return int that represents the query the user wants to user
+	 * 
+	 * Preconditions: none
+	 * postconditions: the integer returned is between 1 and 7
 	 */
 	public int queryUser() {
-		Scanner ask_user = new Scanner(System.in);
+		Scanner ask_user = new Scanner(System.in);	// Need to ask the user which query.
+		
+		// Display the list of queries the user can pick from
 		
 		System.out.println("Please select from the following.\n");
 		
@@ -180,16 +217,17 @@ public class Controller {
 		System.out.println("Option 6. Retrieve a copy of the bill for a certain patient's"
 				+ " most recent vist.");
 		
-		//TODO: DEVELOP OWN QUERY
-		System.out.println("Option 7. Display the list of services and their costs (pre-insurance).\n");
+		System.out.println("Option 7. Display the list of services and their costs (pre-insurance).\n");	
 		
 		System.out.print("Enter a digit (1-7) of the option you'd like, or "
 				+ "\'exit\' if you are finished: ");
 		
+		// get the query digit
 		String desired_query = ask_user.next();
 		
 		System.out.println();
 		
+		// Must mean that the user was done with the program.
 		if (desired_query.toUpperCase().equals("EXIT")) {
 			System.out.println("Have a nice day :D\n");
 			closeConnection();
@@ -207,6 +245,9 @@ public class Controller {
 			error = true;
 			
 		}
+		
+		// Check to see if the response is valid 
+		
 		if (query_digit == null) {
 			System.out.println("You have entered an invalid response. When you try again "
 					+ "please enter a digit one through six.");
@@ -224,11 +265,14 @@ public class Controller {
 	}
 	
 	
-	//TODO MAKE IT ILLEGAL TO INSERT A PHONE NUMBER OF OTHER THAN 10 DIGITS.
 	/**
 	 * insertPatient()
 	 * 
-	 * puts a new patient into the database
+	 * puts a new patient into the database. The phone number and response to the insurance question are pretty restricted. But the other
+	 * data doesnt really have many restraints.
+	 * 
+	 * @preconditions the user wanted to insert a patient
+	 * @postconditions the new patient is inserted into the database, if nothing went wrong, i.e. some invalid data was entered.
 	 */
 	public void insertPatient() {
 		String test_query = "select max(custID) from dheykoop1.Customer";
@@ -239,7 +283,7 @@ public class Controller {
         Scanner scan = new Scanner(System.in);  // Need to get the new patient's info
         
         try {
-        	stmt = dbconn.createStatement();
+        	stmt = dbconn.createStatement();		
             answer = stmt.executeQuery(test_query);  
             if (answer == null) {
             	max_id = 1;
@@ -262,7 +306,6 @@ public class Controller {
                 // Shut down the connection to the DBMS.
 
             stmt.close();  
-            //dbconn.close();
         } 
         
         // Catch any unexpected errors from the query.
@@ -276,6 +319,7 @@ public class Controller {
                 System.exit(-1);
         }
         
+        //make unique id for the patient
         int new_customer_id = max_id + 1;
         
         // First get the name of the customer
@@ -300,10 +344,15 @@ public class Controller {
         
         // Thirdly, get a phone number to reach the customer at.
         
-        System.out.println("Please enter a phone number for the patient. NO SPECIAL "
+        System.out.println("Please enter a phone number (10 digits) for the patient. NO SPECIAL "
         		+ "CHARACTERS. ONLY NUMBERS");
         System.out.println("Enter Response Here: ");
         String phone = scan.next();
+        
+        if (phone.length() != 10) {
+        	System.out.println("Not a valid phone number. Rebooting program");
+        	System.exit(-1);
+        }
         
         Integer phone_number = null;	// the phone number of the new customer
         
@@ -376,11 +425,15 @@ public class Controller {
         
 	}
 	
-	//TODO
+
 	/**
 	 * deletePatient()
 	 * 
-	 * takes a certain patient out of the database
+	 * takes a certain patient out of the database. it also makes sure that the patient is removed from all records from
+	 * all tables.
+	 * 
+	 * @precondition the user wants to remove a patient
+	 * @postcondition if the user existed in the database it doesnt anymore
 	 */
 	public void deletePatient() {
 		Scanner scan = new Scanner(System.in); // need to ask the user which customer to remove
@@ -433,6 +486,17 @@ public class Controller {
        
 	}
 	
+	/**
+	 * upcomingProcedures()
+	 * 
+	 * displays all the services for each patient with an upcoming appointment. This one got a little tricky
+	 * with the queries needed to get the final result. Originally i took 'upcoming' to be specific. So I retrieved the
+	 * current date, which is needed either way, and the date one week ahead of the current date. One week in advance seemed
+	 * to mean upcoming to me originally, and I could've also done one month in advance. This one just shows any appointments in the future
+	 * but could be easily changed to show only a certain interval. I didn't see the necessity for this program.
+	 * 
+	 * @postcondition the patient's with upcoming appointments are displayed along with all of the services.
+	 */
 	public void upcomingProcedures() {
 		//TODO: retrieve current date.
 		
@@ -440,8 +504,8 @@ public class Controller {
         ResultSet answer = null;		// the result of the executed query
         String get_date = "select TO_CHAR(SYSDATE,\'DD-MON-YYYY\'), TO_CHAR(SYSDATE+7,\'DD-MON-YYYY\') FROM dual";
       
-        String current_date = null;
-        String one_week = null;
+        String current_date = null;		// current date retrieved from oracle (very trustworthy)
+        String one_week = null;			// the date one week ahead
         
         try {
         	stmt = dbconn.createStatement();
@@ -472,6 +536,8 @@ public class Controller {
                 System.exit(-1);
         }
         
+        // gets the upcoming appointments. Could easily be modified to get the appointments within
+        // a certain period of time.
         String get_upcoming_apts = "select aptID, aptDate, custID, name from dheykoop1.Customer "
         		+ "join dheykoop1.Appointment on (custID = customerNo) "
         		+ "where aptDate >= TO_DATE(" + "\'" + current_date + "\', \'DD-MON-YYYY\') ";//and "
@@ -479,6 +545,9 @@ public class Controller {
         
         stmt = null;
         answer = null;
+        
+        // now to get the results
+        
         try {
         	stmt = dbconn.createStatement();
         	answer = stmt.executeQuery(get_upcoming_apts);
@@ -498,6 +567,7 @@ public class Controller {
             			+ "identification number " + custId + " on the date: " + date + " has "
             					+ "the following scheudled procedures: \n");
             	
+            	// Gets the services for this specific appointment.
             	String inner_query = "select description as \"Service\" from dheykoop1.Service join dheykoop1.ScheduledProcedure "
             			+ "on (Service.sID = ScheduledProcedure.sID) where aptID = " + aptID;
             	
@@ -542,11 +612,20 @@ public class Controller {
         }
 	}
 	
+	/**
+	 * whichPatients()
+	 * 
+	 * shows the patients that have an appointment on a certain date. Could be easily modified to also show the time it is scheduled for
+	 * as well.
+	 * 
+	 * @precondition the user wants to know which patients have an appointment on a certain day
+	 * @postcondition these patients are displayed to the screen
+	 */
 	public void whichPatients() {
 		Scanner scan = new Scanner(System.in);
 		System.out.println("Which date are you inquiring about? Please enter in the form: "
 				+ "08-jun-2020");
-		boolean error = false;
+		boolean error = false;		// tells whether an error has occurred in retrieving the date.
 		
 		String response = scan.next();
 		
@@ -562,6 +641,7 @@ public class Controller {
 			System.exit(-1);
 		}
 		
+		// the query that gets the customers.
 		String query = "select custID as \"ID\", name from dheykoop1.Customer join dheykoop1.Appointment"
 				+ " on (custID = customerNo) where aptDate = TO_DATE(\'" + response + "\', \'DD-MON-YYYY\')";
 		
@@ -615,14 +695,30 @@ public class Controller {
 		
 	}
 	
-	
+	/**
+	 * getBill()
+	 * 
+	 * this produces the bill of a certain patient's most recent visit. It is formatted 
+	 * in a somewhat neat, readable manner. It shows the date of the appointment, the services
+	 * given, the charges for each of them, the user's info, including whether the patient has 
+	 * insurance or not, and the total cost.
+	 * 
+	 * preconditions: the user wants to see the most recent bill of a certain patient.
+	 * 
+	 * postconditions: the bill has been displayed to the user if there has been an appointment
+	 * in the past involving that patient. If not, the user is told of the lack of past appointments.
+	 */
 	public void getBill() {
+		// this max helps the results look more refined on the bill
 		int string_max = 30;
-		Scanner scan = new Scanner(System.in);
+		
+		// need to get the id of the patient in question
+		Scanner scan = new Scanner(System.in); // 
 		System.out.println("Enter the unique identifier for the patient: ");
 		String id = scan.next();
-		Integer custID = null;
-		Integer aptID = null;
+		
+		Integer custID = null;	// the id of the patient
+		Integer aptID = null;	// the appointment id that may or may not be found
 		
 		try {
 			custID = Integer.parseInt(id);
@@ -633,20 +729,20 @@ public class Controller {
 			System.exit(-1);
 		}
 		
+		// query that will get the customer info
 		String customer_info_query = "select name, phoneNo, insurance from "
 				+ " dheykoop1.Customer where custID = " + custID;
 		
+		// the query that will get the last appointment this patient had
 		String get_last_apt = "select aptID,TO_CHAR(aptDate,'DD-MON-YYYY') from (select aptID, aptDate from dheykoop1.Appointment" + 
 				" where aptDate <= SYSDATE and customerNo = " + custID + 
 				" order by aptDate desc)" + 
 				" where rownum <=1";
 		
-		
-		
-		Statement stmt = null;
-		ResultSet answer = null;
-		ResultSet last_date = null;
-		ResultSet services_list = null;
+		Statement stmt = null;			// statement to exc query
+		ResultSet answer = null;		// the results of the query that gets the customer info
+		ResultSet last_date = null;		// the results of the query that gets the last appointment the patient had
+		ResultSet services_list = null;	// the results of the query that will get the services that occurred at this last appointment
 		
 		try {
 			stmt = dbconn.createStatement();
@@ -659,6 +755,7 @@ public class Controller {
 					String phone = answer.getString("phoneNo");
 					String insured = answer.getString("insurance");
 					String insurance = "No";
+					
 					if (insured.equals("1")) {
 						insurance = "Yes";
 					}
@@ -672,7 +769,7 @@ public class Controller {
 							// Getting the appointment ID.
 
 							aptID = last_date.getInt("aptID");
-							String date = last_date.getString("TO_CHAR(aptDate,'DD-MON-YYYY')");
+							String date = last_date.getString("TO_CHAR(aptDate,'DD-MON-YYYY')"); // the date of the last appointment.
 	
 							String get_services = "select description as \"Service\", cost "
 									+ "from dheykoop1.Service join dheykoop1.scheduledprocedure on (dheykoop1.Service.sID = dheykoop1.scheduledprocedure.sID) "
