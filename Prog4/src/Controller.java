@@ -854,12 +854,16 @@ public class Controller {
 	 * 
 	 * displays to the users all the services that are available and their
 	 * costs. This is a short, simple, but sweet query
+	 * 
+	 * @precondition there have been services put into the table.
+	 * @postcondition the services have been shown to the user
 	 */
 	public void showServices() {
-		int string_max = 30;
-		
-		Statement stmt = null;
-		ResultSet answer = null;
+		int string_max = 30;		// this number helps make the results of the query look
+									// more uniform
+									//
+		Statement stmt = null;		// statement to exc query
+		ResultSet answer = null;	// the results of the query
 		
 		String query = "select description as \"Service\", cost as \"Cost\" "
 		+ " from dheykoop1.Service";
