@@ -183,7 +183,6 @@ public class Controller {
 					
 	}
 	
-	//TODO
 	/**
 	 * queryUser()
 	 * 
@@ -498,7 +497,6 @@ public class Controller {
 	 * @postcondition the patient's with upcoming appointments are displayed along with all of the services.
 	 */
 	public void upcomingProcedures() {
-		//TODO: retrieve current date.
 		
 		Statement stmt = null; 			// The query statement that will be executed
         ResultSet answer = null;		// the result of the executed query
@@ -538,9 +536,9 @@ public class Controller {
         
         // gets the upcoming appointments. Could easily be modified to get the appointments within
         // a certain period of time.
-        String get_upcoming_apts = "select aptID, aptDate, custID, name from dheykoop1.Customer "
+        String get_upcoming_apts = "select aptID, aptDate, TO_CHAR(aptDate,'HH24:MI'), custID, name from dheykoop1.Customer "
         		+ "join dheykoop1.Appointment on (custID = customerNo) "
-        		+ "where aptDate >= TO_DATE(" + "\'" + current_date + "\', \'DD-MON-YYYY\') ";//and "
+        		+ "where aptDate >= SYSDATE"; //TO_DATE(" + "\'" + current_date + "\', \'DD-MON-YYYY\') ";//and "
         				//+ "aptDate <= TO_DATE(" + "\'" + one_week + "\', \'DD-MON-YYYY\')";
         
         stmt = null;
@@ -562,9 +560,10 @@ public class Controller {
             	String custName = answer.getString("name");
             	int custId = answer.getInt("custID");
             	Date date = answer.getDate("aptDate");
+            	String time = answer.getString("TO_CHAR(aptDate,'HH24:MI')");
             	
-            	System.out.println("The appointment scheduled for " + custName.toUpperCase() + " with "
-            			+ "identification number " + custId + " on the date: " + date + " has "
+            	System.out.println("The appointment scheduled for " + custName.toUpperCase() + "\nwith "
+            			+ "identification number " + custId + " on " + date + "\nat " + time + " has "
             					+ "the following scheudled procedures: \n");
             	
             	// Gets the services for this specific appointment.
@@ -622,6 +621,7 @@ public class Controller {
 	 * @postcondition these patients are displayed to the screen
 	 */
 	public void whichPatients() {
+		int max_string = 15;
 		Scanner scan = new Scanner(System.in);
 		System.out.println("Which date are you inquiring about? Please enter in the form: "
 				+ "08-jun-2020");
@@ -642,8 +642,9 @@ public class Controller {
 		}
 		
 		// the query that gets the customers.
-		String query = "select custID as \"ID\", name from dheykoop1.Customer join dheykoop1.Appointment"
-				+ " on (custID = customerNo) where aptDate = TO_DATE(\'" + response + "\', \'DD-MON-YYYY\')";
+		String query = "select custID as \"ID\", name, TO_CHAR(aptDate,'HH24:MI') as \"Time\" "
+				+ "from dheykoop1.Customer join dheykoop1.Appointment"
+				+ " on (custID = customerNo) where TO_CHAR(aptDate,'DD-MON-YYYY') = \'" +  response.toUpperCase() + "\'";//TO_DATE(\'" + response + "\', \'DD-MON-YYYY\')";
 		
 		Statement stmt = null; 			// The query statement that will be executed
         ResultSet answer = null;		// the result of the executed query
@@ -661,17 +662,39 @@ public class Controller {
 
                 ResultSetMetaData answermetadata = answer.getMetaData();
 
+                String temp = "";
                 for (int i = 1; i <= answermetadata.getColumnCount(); i++) {
-                    System.out.print(answermetadata.getColumnName(i) + "\t");
+                	temp = answermetadata.getColumnName(i);
+                	while (temp.length() < max_string) {
+                		temp += " ";
+                	}
+                    System.out.print(temp);
                 }
                 System.out.println();
 
                     // Use next() to advance cursor through the result
                     // tuples and print their attribute values
-
+                String id = "";
+                String name = "";
+                String time = "";
                 while (answer.next()) {
-                    System.out.println(answer.getInt("ID") + "\t"
-                        + answer.getString("name") + "\t");
+                	id = answer.getString("ID");
+                	while (id.length() < max_string) {
+                		id += " ";
+                	}
+                	
+                	name = answer.getString("name");
+                	while (name.length() < max_string) {
+                		name += " ";
+                	}
+                	
+                	time = answer.getString("Time");
+                	while (time.length() < max_string) {
+                		time += " ";
+                	}
+                    System.out.println(id + name + time);
+                        
+                        
                    
                 }
             }
@@ -735,7 +758,7 @@ public class Controller {
 		
 		// the query that will get the last appointment this patient had
 		String get_last_apt = "select aptID,TO_CHAR(aptDate,'DD-MON-YYYY') from (select aptID, aptDate from dheykoop1.Appointment" + 
-				" where aptDate <= SYSDATE and customerNo = " + custID + 
+				" where TRUNC(aptDate) <= TRUNC(SYSDATE) and customerNo = " + custID + 
 				" order by aptDate desc)" + 
 				" where rownum <=1";
 		
